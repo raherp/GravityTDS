@@ -22,7 +22,7 @@
 
 GravityTDS::GravityTDS()
 {
-    this->pin = A1;
+    this->pin = 25;
     this->temperature = 25.0;
     this->aref = 5.0;
     this->adcRange = 1024.0;
@@ -96,11 +96,13 @@ float GravityTDS::getEcValue()
 
 void GravityTDS::readKValues()
 {
-    EEPROM_read(this->kValueAddress, this->kValue);  
+    EEPROM.begin(this->kValueAddress + sizeof(float));
+    EEPROM_read(this->kValueAddress, this->kValue);
     if(EEPROM.read(this->kValueAddress)==0xFF && EEPROM.read(this->kValueAddress+1)==0xFF && EEPROM.read(this->kValueAddress+2)==0xFF && EEPROM.read(this->kValueAddress+3)==0xFF)
     {
       this->kValue = 1.0;   // default value: K = 1.0
       EEPROM_write(this->kValueAddress, this->kValue);
+      EEPROM.commit();
     }
 }
 
@@ -200,6 +202,7 @@ void GravityTDS::ecCalibration(byte mode)
             if(ecCalibrationFinish)
             {
                EEPROM_write(kValueAddress, kValue);
+               EEPROM.commit();
                Serial.print(F(">>>Calibration Successful,K Value Saved"));
             }
             else Serial.print(F(">>>Calibration Failed"));       
